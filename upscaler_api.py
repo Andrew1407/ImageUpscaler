@@ -1,8 +1,4 @@
 import telebot
-import numpy as np
-from io import BytesIO
-from PIL import Image
-
 from image_upscaler import ImageUpscaler
 
 
@@ -27,6 +23,5 @@ class UpscalerApi:
     file_id = message.photo[-1].file_id
     file_info = self.__bot.get_file(file_id)
     file = self.__bot.download_file(file_info.file_path)
-    img = np.array(Image.open(BytesIO(file)))
-    f = self.__upscaler.increase_resolution(img)
-    self.__bot.send_document(message.chat.id, f)
+    upscaled_image = self.__upscaler.increase_resolution(file)
+    self.__bot.send_document(message.chat.id, upscaled_image)
