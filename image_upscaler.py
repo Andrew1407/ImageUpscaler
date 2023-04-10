@@ -1,30 +1,16 @@
-import uuid
-import os
-from io import BufferedReader
-
-import numpy as np
-from PIL import Image
-from io import BytesIO
+from keras.engine.functional import Functional
+import utils
 
 
 class ImageUpscaler:
-  def __init__(self, storage_path: str):
+  def __init__(self, storage_path: str, model: Functional):
     self.__storage_path: str = storage_path
+    self.__model: Functional = model
 
 
-  def increase_resolution(self, image_bytes: bytes):
-    image = self.__from_bytes_to_array(image_bytes)
-    saved = self.__save_as_file(image)
+  def increase_resolution(self, image: bytes):
+    prepared_data = utils.convert_raw_input(image)
+    tensor = self.__model(prepared_data, training=False)
+    upscaled_img = utils.unpack_tensor_image(tensor)
+    saved = utils.save_as_file(self.__storage_path, upscaled_img)
     return saved
-
-
-  def __from_bytes_to_array(self, bytes: bytes) -> np.ndarray:
-    return np.array(Image.open(BytesIO(bytes)))
-  
-
-  def __save_as_file(self, array: np.ndarray) -> BufferedReader:
-    full_path = f'{self.__storage_path}/{uuid.uuid1()}.png'
-    Image.fromarray(array).save(full_path)
-    file = open(full_path, 'rb')
-    os.remove(full_path)
-    return file
