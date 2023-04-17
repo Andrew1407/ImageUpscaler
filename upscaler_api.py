@@ -1,5 +1,5 @@
 import telebot
-from image_upscaler import ImageUpscaler
+from image_upscaler import ImageUpscaler, ImageException
 
 
 class UpscalerApi:
@@ -20,8 +20,11 @@ class UpscalerApi:
 
 
   def __upscale_passed_image(self, message: telebot.types.Message):
-    file_id = message.photo[-1].file_id
-    file_info = self.__bot.get_file(file_id)
-    file = self.__bot.download_file(file_info.file_path)
-    upscaled_image = self.__upscaler.increase_resolution(file)
-    self.__bot.send_document(message.chat.id, upscaled_image)
+    try:
+      file_id = message.photo[-1].file_id
+      file_info = self.__bot.get_file(file_id)
+      file = self.__bot.download_file(file_info.file_path)
+      upscaled_image = self.__upscaler.increase_resolution(file)
+      self.__bot.send_document(message.chat.id, upscaled_image)
+    except ImageException as e:
+      self.__bot.reply_to(message, str(e))
