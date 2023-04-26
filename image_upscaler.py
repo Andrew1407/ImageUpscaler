@@ -1,3 +1,4 @@
+from io import BufferedReader
 from keras.engine.functional import Functional
 import utils
 
@@ -12,7 +13,7 @@ class ImageUpscaler:
     self.__max_image_size: tuple[int, int] = (400, 400)
 
 
-  def increase_resolution(self, image: bytes):
+  def increase_resolution(self, image: bytes) -> BufferedReader:
     prepared_data = utils.convert_raw_input(image)
     self.__check_image_size(prepared_data.shape[1:3])
     tensor = self.__model(prepared_data, training=False)
@@ -21,7 +22,7 @@ class ImageUpscaler:
     return saved
 
   
-  def __check_image_size(self, shape: tuple):
+  def __check_image_size(self, shape: tuple[int, int]):
     width, height = shape
     if width > self.__max_image_size[0] or width > self.__max_image_size[1]:
       message = f'{(width, height)} size is too big to upscale. Please pass images smaller than or equal {(self.__max_image_size)}.'
