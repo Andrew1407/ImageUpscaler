@@ -6,14 +6,19 @@ import numpy as np
 from PIL import Image
 
 
+RGB_MIN = 0
+RGB_MAX = 255
+RGB_MEAN = (RGB_MAX - RGB_MIN) / 2
+NORMALIZATION_RANGE_LEN = 1
+
 def convert_raw_input(image: bytes) -> np.ndarray:
   arr = np.array(Image.open(BytesIO(image)))
-  normalized = (arr / 127.5) - 1
-  return np.expand_dims(normalized, 0) 
+  normalized = (arr / RGB_MEAN) - NORMALIZATION_RANGE_LEN
+  return np.expand_dims(normalized, axis=0) 
 
 
 def unpack_tensor_image(eager_tensor: tf.TensorArray) -> Image.Image:
-  clipped = tf.clip_by_value((eager_tensor + 1) * 127.5, 0, 255)
+  clipped = tf.clip_by_value((eager_tensor + NORMALIZATION_RANGE_LEN) * RGB_MEAN, RGB_MIN, RGB_MAX)
   arr = clipped.numpy()[0]
   return Image.fromarray(arr.astype('uint8'), 'RGB')
 
